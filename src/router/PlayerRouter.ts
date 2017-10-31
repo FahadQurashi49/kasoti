@@ -1,5 +1,6 @@
 import {Router, Request, Response, NextFunction} from 'express';
 import Player from  '../models/Player';
+import Questioner from  '../models/Questioner';
 
 export class PlayerRouter {
     public router: Router;
@@ -34,12 +35,29 @@ export class PlayerRouter {
         }).catch(next);
     }
 
+    // business logic
+
+    public changeType(req: Request, res: Response, next: NextFunction) {
+        Player.findById(req.params.id).then((player)=>{
+            if (req.params.type === "qr") {
+                /* player.kind = 'questioner';
+                player.save().then((savedPlayer)=> {
+                    res.json(savedPlayer);
+                }).catch(next); */
+
+            } else if (req.params.type === "ar") {
+            }
+        }).catch(next);
+    }
+
 
     public routes() {
         this.router.post("/", this.createOne);
         this.router.get("/:id", this.getOne);
         this.router.put("/:id", this.updateOne);
         this.router.delete("/:id", this.deleteOne);
+
+        this.router.get("/:id/type/:type", this.changeType);
     }
 
 }

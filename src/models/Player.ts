@@ -1,7 +1,6 @@
 import {Schema, model} from 'mongoose';
 
 
-let options = {discriminatorKey: 'kind'};
 let PlayerSchema: Schema = new Schema({
     name: {
         type: String,
@@ -12,7 +11,27 @@ let PlayerSchema: Schema = new Schema({
     gamePlay: {
         type: Schema.Types.ObjectId,
         ref: 'game_play',
+    },
+    playerType: {
+        type: String,
+        enum: ['Player', 'Questioner', 'Answerer'],
+        required: true
+    },
+    noOfQuestions: {
+        type: Number,
+        required: [() => {
+            return this.playerType === 'Questioner'
+        }, "no of questions is required"]
+    },
+    Answer: {
+        type: String,
+        minlength: [2, 'Answer must contain atleast 2 characters'],
+        // add max length
+        required: [() => {
+            return this.playerType === 'Answerer'
+        }, "Answer is required"]
     }
-}, options);
+
+});
 
 export default model('player', PlayerSchema);
