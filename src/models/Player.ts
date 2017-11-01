@@ -15,7 +15,8 @@ let PlayerSchema: Schema = new Schema({
     playerType: {
         type: String,
         enum: ['Player', 'Questioner', 'Answerer'],
-        required: true
+        required: true,
+        default: 'Player'
     },
     noOfQuestions: {
         type: Number,
