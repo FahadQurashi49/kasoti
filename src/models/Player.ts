@@ -1,4 +1,5 @@
 import {Schema, model} from 'mongoose';
+import PlayerType from './PlayerType';
 
 
 let PlayerSchema: Schema = new Schema({
@@ -14,14 +15,14 @@ let PlayerSchema: Schema = new Schema({
     },
     playerType: {
         type: String,
-        enum: ['Player', 'Questioner', 'Answerer'],
+        enum: Object.keys(PlayerType).map(key => PlayerType[key]),
         required: true,
         default: 'Player'
     },
     noOfQuestions: {
         type: Number,
         required: [() => {
-            return this.playerType === 'Questioner'
+            return this.playerType === PlayerType.QUESTIONER
         }, "no of questions is required"]
     },
     Answer: {
@@ -29,7 +30,7 @@ let PlayerSchema: Schema = new Schema({
         minlength: [2, 'Answer must contain atleast 2 characters'],
         // add max length
         required: [() => {
-            return this.playerType === 'Answerer'
+            return this.playerType === PlayerType.ANSWERER
         }, "Answer is required"]
     }
 

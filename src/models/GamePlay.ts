@@ -9,11 +9,11 @@ let GamePlaySchema: Schema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'player',
         required: [true, 'initiator is required']
-    },
+    },    
     noOfQuestioner: {
         type: Number,
-        required: [true, "number of questioner is required"],
-        default: 0
+        min: [1, "atleast one questioner required"], 
+        max: [4, "maximum 4 questioner allowed"] 
     }
     // add invite url
 });

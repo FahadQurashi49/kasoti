@@ -1,5 +1,5 @@
-import {Router, Request, Response, NextFunction} from 'express';
-import GamePlay from  '../models/GamePlay';
+import { Router, Request, Response, NextFunction } from 'express';
+import GamePlay from '../models/GamePlay';
 import Player from '../models/Player';
 
 export class GamePlayRouter {
@@ -13,7 +13,7 @@ export class GamePlayRouter {
         // add checks and conditions
         GamePlay.create(req.body).then((gamePlay) => {
             if (gamePlay && gamePlay.initiator) {
-                Player.findOneAndUpdate({_id: gamePlay.initiator}, {gamePlay: gamePlay._id}).then(() =>{
+                Player.findOneAndUpdate({ _id: gamePlay.initiator }, { gamePlay: gamePlay._id }).then(() => {
                     res.json(gamePlay);
                 }).catch(next);
             }
@@ -21,9 +21,16 @@ export class GamePlayRouter {
         }).catch(next);
     }
 
+    //just for development
+    public getAll(req: Request, res: Response, next: NextFunction) {
+        GamePlay.find({}).then((records) => {
+            res.json(records);
+        }).catch(next);
+    }
 
 
     public routes() {
+        this.router.get("/", this.getAll);
         this.router.post("/", this.createOne);
     }
 
