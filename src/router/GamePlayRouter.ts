@@ -10,7 +10,7 @@ export class GamePlayRouter {
     }
 
     public createOne(req: Request, res: Response, next: NextFunction) {
-        // add checks and conditions
+        // TODO: add checks and conditions
         GamePlay.create(req.body).then((gamePlay) => {
             if (gamePlay && gamePlay.initiator) {
                 Player.findOneAndUpdate({ _id: gamePlay.initiator }, { gamePlay: gamePlay._id }).then(() => {

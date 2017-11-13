@@ -48,12 +48,12 @@ export class PlayerRouter {
     public changeType(req: Request, res: Response, next: NextFunction) {
         Player.findById(req.params.id).then((player) => {
             if (!player.gamePlay) {
-                 // not in a gameplay
-                 // TODO: send error object
-                 res.json(null);
-                 return;
+                // not in a gameplay
+                // TODO: send error object
+                res.json(null);
+                return;
             }
-            switch(req.params.type) {
+            switch (req.params.type) {
                 case "qr":
                     player.playerType = PlayerType.QUESTIONER;
                     break;
@@ -74,13 +74,13 @@ export class PlayerRouter {
 
     // this is here to make sure this operation is done by 
     // the initiator of the game, which is a Player
-    // TODO: if player in a running game it should not change type
+    // TODO: if player in a running game it should not set No Of Questioner
     public setNoOfQuestioner(req: Request, res: Response, next: NextFunction) {
-        GamePlay.findOne({ initiator: req.params.id })            
+        GamePlay.findOne({ initiator: req.params.id })
             .then((gamePlay) => {
                 if (gamePlay) {
                     let noq = parseInt(req.params.noq);
-                    if (!isNaN(noq)) {                    
+                    if (!isNaN(noq)) {
                         gamePlay.noOfQuestioner = noq;
                         gamePlay.save().then((savedGamePlay) => {
                             res.json(savedGamePlay);
@@ -100,7 +100,99 @@ export class PlayerRouter {
 
             }).catch(next);
     }
-    
+
+    public setGameWaiting(req: Request, res: Response, next: NextFunction) {
+        GamePlay.findOne({ initiator: req.params.id }).then((gamePlay) => {
+            if (gamePlay) {
+                gamePlay.isWaiting = true;
+                gamePlay.save().then((savedGamePlay) => {
+                    res.json(savedGamePlay);
+                }).catch(next);
+            } else {
+                // TODO: handle error
+                // gameplay not found
+                res.json(null);
+                return;
+            }
+        }).catch(next);
+    }
+
+    public joinGame(req: Request, res: Response, next: NextFunction) {
+        Player.findById({ _id: req.params.id }).then((player) => {
+            if (player) { // if player already in a game play?
+                if (!player.gamePlay) {
+                    GamePlay.findById({ _id: req.params.g_id }).then((gamePlay) => {
+                        if (gamePlay) {
+                            if (!gamePlay.isRunning) {
+                                if (gamePlay.isWaiting) {
+                                    switch (req.params.type) {
+                                        case "qr":
+                                            Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.QUESTIONER }).then((count) => {
+                                                if (count === gamePlay.noOfQuestioner) {
+                                                    // TODO: handle error
+                                                    res.send("no room for new questioner");
+                                                } else {
+                                                    player.gamePlay = req.params.g_id;
+                                                    player.playerType = PlayerType.QUESTIONER;
+                                                    player.save().then((savedPlayer) => {
+                                                        res.json(savedPlayer);
+                                                    }).catch(next);
+                                                }
+                                            }).catch(next);
+                                            break;
+                                        case "ar":
+                                            Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.ANSWERER }).then((count) => {
+                                                if (count > 0) {
+                                                    // TODO: handle error
+                                                    res.send("no room for new answerer");
+                                                } else {
+                                                    player.gamePlay = req.params.g_id;
+                                                    player.playerType = PlayerType.ANSWERER;
+                                                    player.save().then((savedPlayer) => {
+                                                        res.json(savedPlayer);
+                                                    }).catch(next);
+                                                }
+                                            }).catch(next);
+
+                                            break;
+                                        default:
+                                            // TODO: handle error
+                                            res.send("player type not identified");
+                                            break;
+                                    }
+
+                                } else {
+                                    // TODO: handle error
+                                    res.send("gameplay not waiting");
+                                    return;
+                                }
+                            } else {
+                                // TODO: handle error
+                                // gameplay not running
+                                res.send("gameplay not running");
+                                return;
+                            }
+                        } else {
+                            // TODO: handle error
+                            res.send("gameplay not found");
+                            return;
+                        }
+                    }).catch(next);
+                } else {
+                    // TODO: handle error
+                    res.send("player already in a gameplay");
+                    return;
+                }
+
+            } else {
+                // TODO: handle error
+                res.send("player not found");
+                return;
+            }
+
+        }).catch(next);
+    }
+
 
     public routes() {
         this.router.post("/", this.createOne);
@@ -111,6 +203,8 @@ export class PlayerRouter {
 
         this.router.get("/:id/type/:type", this.changeType);
         this.router.get("/:id/noq/:noq", this.setNoOfQuestioner);
+        this.router.get("/:id/wait", this.setGameWaiting);
+        this.router.get("/:id/type/:type/gid/:g_id/join", this.joinGame);
     }
 
 }
