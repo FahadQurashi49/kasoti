@@ -193,6 +193,41 @@ export class PlayerRouter {
         }).catch(next);
     }
 
+    public startGame(req: Request, res: Response, next: NextFunction) {
+        GamePlay.findOne({ initiator: req.params.id }).then((gamePlay) => {
+            if (gamePlay) {
+                if (gamePlay.isWaiting) {
+                    if (!gamePlay.isRunning) {
+                        Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.QUESTIONER }).then((questionerCount)=> {
+                            Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.ANSWERER }).then((answererCount)=> {
+                                if (questionerCount > 0 && questionerCount <= gamePlay.noOfQuestioner && answererCount === 1) {
+                                    gamePlay.isWaiting = false;
+                                    gamePlay.isRunning = true;
+                                    gamePlay.joinedQuestionerCount = questionerCount;
+                                    gamePlay.save().then((savedGamePlay) => {
+                                        res.json(savedGamePlay);
+                                    }).catch(next);
+                                } else {
+                                    // TODO: handle error
+                                    res.json("can't start game!");
+                                }
+                            }).catch(next);
+                        }).catch(next);
+
+                    } else {
+                        // TODO: handle error
+                        res.json("gameplay already running");
+                    }
+                } else {
+                    // TODO: handle error
+                    res.json("gameplay not waiting");
+                }
+            } else {
+                // TODO: handle error
+                res.json("gameplay not found");
+            }
+        }).catch(next);
+    }
 
     public routes() {
         this.router.post("/", this.createOne);
@@ -205,6 +240,7 @@ export class PlayerRouter {
         this.router.get("/:id/noq/:noq", this.setNoOfQuestioner);
         this.router.get("/:id/wait", this.setGameWaiting);
         this.router.get("/:id/type/:type/gid/:g_id/join", this.joinGame);
+        this.router.get("/:id/gid/:g_id/start", this.startGame);
     }
 
 }

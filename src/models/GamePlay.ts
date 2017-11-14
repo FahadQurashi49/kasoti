@@ -15,6 +15,11 @@ let GamePlaySchema: Schema = new Schema({
         min: [1, "atleast one questioner required"], 
         max: [4, "maximum 4 questioner allowed"] 
     },
+    joinedQuestionerCount: {
+        type: Number,
+        min: [1, "atleast one questioner required"], 
+        max: [4, "maximum 4 questioner allowed"] 
+    },
     isWaiting: {
         type: Boolean,
         default: false
