@@ -48,14 +48,13 @@ export class PlayerRouter {
     public changeType(req: Request, res: Response, next: NextFunction) {
         Player.findById(req.params.id).then((player) => {
             if (!player.gamePlay) {
-                // not in a gameplay
                 // TODO: send error object
-                res.json(null);
+                res.json("not in a gameplay");
                 return;
             }
             switch (req.params.type) {
                 case "qr":
-                    player.playerType = PlayerType.QUESTIONER;
+                    player.playerType = PlayerType.QUESTIONER;                    
                     break;
                 case "ar":
                     player.playerType = PlayerType.ANSWERER;
@@ -65,7 +64,7 @@ export class PlayerRouter {
                     res.json(null);
                     return;
             }
-
+            
             player.save().then((savedPlayer) => {
                 res.json(savedPlayer);
             }).catch(next);
@@ -209,6 +208,7 @@ export class PlayerRouter {
                                     }).catch(next);
                                 } else {
                                     // TODO: handle error
+                                    // wait again
                                     res.json("can't start game!");
                                 }
                             }).catch(next);

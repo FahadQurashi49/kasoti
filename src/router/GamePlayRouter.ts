@@ -8,17 +8,29 @@ export class GamePlayRouter {
         this.router = Router();
         this.routes();
     }
-
+    // initiates a game
     public createOne(req: Request, res: Response, next: NextFunction) {
         // TODO: add checks and conditions
-        GamePlay.create(req.body).then((gamePlay) => {
-            if (gamePlay && gamePlay.initiator) {
-                Player.findOneAndUpdate({ _id: gamePlay.initiator }, { gamePlay: gamePlay._id }).then(() => {
-                    res.json(gamePlay);
+        // check initiator is not already a initiator of other game?
+        let gamePlayReq: any = req.body;
+        GamePlay.find({ initiator: gamePlayReq.initiator }).then((initiatorGamePlays) => {
+            if (initiatorGamePlays.length === 0) {
+                GamePlay.create(req.body).then((gamePlay) => {
+                    // initiator will come in req.body
+                    if (gamePlay) {
+                        Player.findOneAndUpdate({ _id: gamePlay.initiator }, { gamePlay: gamePlay._id }).then(() => {
+                            res.json(gamePlay);
+                        }).catch(next);
+                    } else {
+                        res.json("gameplay could not be created");
+                    }
                 }).catch(next);
+            } else {
+                res.json("player has already initiated other game");
             }
 
         }).catch(next);
+
     }
 
     //just for development
