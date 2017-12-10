@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import GamePlay from '../models/GamePlay';
 import Player from '../models/Player';
+import { KasotiError } from '../exception/kasoti_error_map';
 
 export class GamePlayRouter {
     public router: Router;
@@ -22,15 +23,21 @@ export class GamePlayRouter {
                             res.json(gamePlay);
                         }).catch(next);
                     } else {
-                        res.json("gameplay could not be created");
+                        KasotiError.throwError(101);
                     }
                 }).catch(next);
             } else {
-                res.json("player has already initiated other game");
+                KasotiError.throwError(100);
             }
 
         }).catch(next);
 
+    }
+
+    public deleteOne(req: Request, res: Response, next: NextFunction) {
+        GamePlay.findByIdAndRemove({ _id: req.params.id }).then((gamePlay) => {
+            res.json(gamePlay);
+        }).catch(next);
     }
 
     //just for development
@@ -44,6 +51,7 @@ export class GamePlayRouter {
     public routes() {
         this.router.get("/", this.getAll);
         this.router.post("/", this.createOne);
+        this.router.delete("/:id", this.deleteOne)
     }
 
 }
