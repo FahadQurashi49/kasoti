@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import Player from '../models/Player';
 import PlayerType from '../models/PlayerType';
 import GamePlay from '../models/GamePlay';
+import { KasotiError } from '../exception/kasoti_error_map';
 
 export class PlayerRouter {
     public router: Router;
@@ -44,30 +45,30 @@ export class PlayerRouter {
 
     // business logic
 
-    // TODO: if player in a running game it should not change type
     public changeType(req: Request, res: Response, next: NextFunction) {
         Player.findById(req.params.id).then((player) => {
-            if (!player.gamePlay) {
-                // TODO: send error object
-                res.json("not in a gameplay");
-                return;
-            }
-            switch (req.params.type) {
-                case "qr":
-                    player.playerType = PlayerType.QUESTIONER;                    
-                    break;
-                case "ar":
-                    player.playerType = PlayerType.ANSWERER;
-                    break;
-                default:
-                    // TODO: send error object
-                    res.json(null);
-                    return;
-            }
-            
-            player.save().then((savedPlayer) => {
-                res.json(savedPlayer);
+            GamePlay.findById(player.gamePlay).then((gamePlay) => {
+                if (gamePlay) {
+                    if (!gamePlay.isRunning) {
+                        switch (req.params.type) {
+                            case "qr":
+                                player.playerType = PlayerType.QUESTIONER;
+                                break;
+                            case "ar":
+                                player.playerType = PlayerType.ANSWERER;
+                                break;
+                            default:
+                                KasotiError.throwError(104);
+                                return;
+                        }
+
+                        player.save().then((savedPlayer) => {
+                            res.json(savedPlayer);
+                        }).catch(next);
+                    } else KasotiError.throwError(103); //cannot change type while in a running game play
+                } else KasotiError.throwError(102);     //not in a gameplay
             }).catch(next);
+
         }).catch(next);
     }
 
@@ -197,8 +198,8 @@ export class PlayerRouter {
             if (gamePlay) {
                 if (gamePlay.isWaiting) {
                     if (!gamePlay.isRunning) {
-                        Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.QUESTIONER }).then((questionerCount)=> {
-                            Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.ANSWERER }).then((answererCount)=> {
+                        Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.QUESTIONER }).then((questionerCount) => {
+                            Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.ANSWERER }).then((answererCount) => {
                                 if (questionerCount > 0 && questionerCount <= gamePlay.noOfQuestioner && answererCount === 1) {
                                     gamePlay.isWaiting = false;
                                     gamePlay.isRunning = true;

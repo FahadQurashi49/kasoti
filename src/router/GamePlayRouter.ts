@@ -34,6 +34,15 @@ export class GamePlayRouter {
 
     }
 
+    public updateOne(req: Request, res: Response, next: NextFunction) {
+        GamePlay.findOneAndUpdate({ _id: req.params.id }, req.body).then(() => {
+            GamePlay.findOne({ _id: req.params.id }).then((player) => {
+                res.json(player);
+            }).catch(next)
+        }).catch(next);
+    }
+
+
     public deleteOne(req: Request, res: Response, next: NextFunction) {
         GamePlay.findByIdAndRemove({ _id: req.params.id }).then((gamePlay) => {
             res.json(gamePlay);
@@ -51,7 +60,8 @@ export class GamePlayRouter {
     public routes() {
         this.router.get("/", this.getAll);
         this.router.post("/", this.createOne);
-        this.router.delete("/:id", this.deleteOne)
+        this.router.put("/:id", this.updateOne);
+        this.router.delete("/:id", this.deleteOne);
     }
 
 }

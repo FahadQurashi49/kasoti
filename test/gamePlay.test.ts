@@ -87,7 +87,7 @@ describe('gamePlay test', () => {
         });
     });
 
-    it('should delete one', (done) => {
+    it('should delete gamePlay', (done) => {
         chai.request(server)
           .del('/api/v1/game_play/' + gamePlayRes._id)
           .end((err, res) => {
@@ -96,6 +96,24 @@ describe('gamePlay test', () => {
               expect(res).to.have.status(200);
               expect(res.type).to.eql('application/json');
               expect(res.body._id).to.eql(gamePlayRes._id);
+            } catch (e) {
+              console.error(e);
+            } finally {
+              done();
+            }
+    
+          });
+      });
+
+      it('should delete player', (done) => {
+        chai.request(server)
+          .del('/api/v1/players/' + playerRes._id)
+          .end((err, res) => {
+            try {
+              expect(err).to.be.null;
+              expect(res).to.have.status(200);
+              expect(res.type).to.eql('application/json');
+              expect(res.body._id).to.eql(playerRes._id);
             } catch (e) {
               console.error(e);
             } finally {
