@@ -10,7 +10,8 @@
     "build": "gulp scripts",
     "compile": "gulp scripts && node dist/index.js",
     "dev": "nodemon -e ts  --exec \"npm run compile\"",
-    "testChangeType": "mocha --reporter spec --require ts-node/register test/kasoti_e2e/changeType.test.ts"
+    "testChangeType": "mocha --reporter spec --require ts-node/register test/kasoti_e2e/changeType.test.ts",
+    "testNoOfQuestioner": "mocha --reporter spec --require ts-node/register test/kasoti_e2e/noOfQuestioner.test.ts"
   },
   "keywords": [],
   "author": "",

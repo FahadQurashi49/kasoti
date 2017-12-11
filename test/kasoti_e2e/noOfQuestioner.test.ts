@@ -15,7 +15,7 @@ const player = { "name": "test player" };
 let playerRes: any;
 let gamePlayRes: any;
 
-describe('changeType end point test', () => {
+describe('noOfQuestioner end point test', () => {
     it('should create one player', (done) => {
         chai.request(server).post('/api/v1/players')
             .send(player)
@@ -26,24 +26,6 @@ describe('changeType end point test', () => {
                     expect(res.type).to.eql('application/json');
                     expect(res.body._id).to.be.string;
                     playerRes = res.body;
-                } catch (e) {
-                    console.error(e);
-                } finally {
-                    done();
-                }
-            });
-    });
-    // error: not in a gameplay
-    it('should get error: ' + KasotiErrorMsgMap.e102, (done) => {
-        let endPoint = '/api/v1/players/' + playerRes._id + '/type/qr';
-        chai.request(server).get(endPoint)
-            .end((err, res) => {
-                try {
-                    let e102 = KasotiErrorMap.e102;
-                    expect(res).to.have.status(e102.statusCode);
-                    expect(res.body.errorCode).to.eql(e102.errorCode);
-                    expect(res.body.statusCode).to.eql(e102.statusCode);
-                    expect(res.body.error).to.eql(e102.message);
                 } catch (e) {
                     console.error(e);
                 } finally {
@@ -72,19 +54,15 @@ describe('changeType end point test', () => {
             });
     });
 
-    // changeType logic
-
-
-    it('should change type of player to ' + PlayerType.QUESTIONER, (done) => {
-        let endPoint = '/api/v1/players/' + playerRes._id + '/type/qr';
-        chai.request(server).get(endPoint)
+    it('should get error: ' + KasotiErrorMsgMap.e105, (done) => {
+        let noq = 'abc';
+        chai.request(server).get('/api/v1/players/' + playerRes._id + '/noq/' + noq)
             .end((err, res) => {
                 try {
-                    expect(err).to.be.null;
-                    expect(res).to.have.status(200);
-                    expect(res.type).to.eql('application/json');
-                    expect(res.body._id).to.be.string;
-                    expect(res.body.playerType).to.eql(PlayerType.QUESTIONER);
+                    let errObj = KasotiErrorMap.e105;
+                    expect(res).to.have.status(errObj.statusCode);
+                    expect(res.body.error).to.eql(errObj.message);
+                    expect(res.body.errorCode).to.eql(errObj.errorCode);
                 } catch (e) {
                     console.error(e);
                 } finally {
@@ -93,16 +71,16 @@ describe('changeType end point test', () => {
             });
     });
 
-    it('should change type of player to ' + PlayerType.ANSWERER, (done) => {
-        let endPoint = '/api/v1/players/' + playerRes._id + '/type/ar';
-        chai.request(server).get(endPoint)
+    it('should get error: ' + KasotiErrorMsgMap.e107, (done) => {
+        let noq = 4;
+        let garbagePlayerId = "59f2319cf687c71d787611f8";
+        chai.request(server).get('/api/v1/players/' + garbagePlayerId + '/noq/' + noq)
             .end((err, res) => {
                 try {
-                    expect(err).to.be.null;
-                    expect(res).to.have.status(200);
-                    expect(res.type).to.eql('application/json');
-                    expect(res.body._id).to.be.string;
-                    expect(res.body.playerType).to.eql(PlayerType.ANSWERER);
+                    let errObj = KasotiErrorMap.e107;
+                    expect(res).to.have.status(errObj.statusCode);
+                    expect(res.body.error).to.eql(errObj.message);
+                    expect(res.body.errorCode).to.eql(errObj.errorCode);
                 } catch (e) {
                     console.error(e);
                 } finally {
@@ -110,17 +88,67 @@ describe('changeType end point test', () => {
                 }
             });
     });
-    // error: unrecognized type
-    it('should get error ' + KasotiErrorMsgMap.e104, (done) => {
-        let endPoint = '/api/v1/players/' + playerRes._id + '/type/abc';
-        chai.request(server).get(endPoint)
+
+    it('should get validation error: maximum 4 questioner allowed', (done) => {
+        let noq = 6;
+        chai.request(server).get('/api/v1/players/' + playerRes._id + '/noq/' + noq)
             .end((err, res) => {
                 try {
-                    let e104 = KasotiErrorMap.e104;
-                    expect(res).to.have.status(e104.statusCode);
-                    expect(res.body.errorCode).to.eql(e104.errorCode);
-                    expect(res.body.statusCode).to.eql(e104.statusCode);
-                    expect(res.body.error).to.eql(e104.message);
+                    expect(res).to.have.status(500);
+                    expect(res.body.error).to.contain("maximum 4 questioner allowed");
+                } catch (e) {
+                    console.error(e);
+                } finally {
+                    done();
+                }
+            });
+    });
+
+    it('should get validation error: atleast one questioner required', (done) => {
+        let noq = 0;
+        chai.request(server).get('/api/v1/players/' + playerRes._id + '/noq/' + noq)
+            .end((err, res) => {
+                try {
+                    expect(res).to.have.status(500);
+                    expect(res.body.error).to.contain("atleast one questioner required");
+                } catch (e) {
+                    console.error(e);
+                } finally {
+                    done();
+                }
+            });
+    });
+
+    it('should set noOfQuestioner of game play to 4', (done) => {
+        let noq = 4;
+        chai.request(server).get('/api/v1/players/' + playerRes._id + '/noq/' + noq)
+            .end((err, res) => {
+                try {
+                    expect(err).to.be.null;
+                    expect(res).to.have.status(200);
+                    expect(res.type).to.eql('application/json');
+                    expect(res.body._id).to.be.string;
+                    expect(res.body.noOfQuestioner).to.eql(noq);
+                    gamePlayRes = res.body;
+                } catch (e) {
+                    console.error(e);
+                } finally {
+                    done();
+                }
+            });
+    });
+
+    it('should set noOfQuestioner of game play to 2', (done) => {
+        let noq = 4;
+        chai.request(server).get('/api/v1/players/' + playerRes._id + '/noq/' + noq)
+            .end((err, res) => {
+                try {
+                    expect(err).to.be.null;
+                    expect(res).to.have.status(200);
+                    expect(res.type).to.eql('application/json');
+                    expect(res.body._id).to.be.string;
+                    expect(res.body.noOfQuestioner).to.eql(noq);
+                    gamePlayRes = res.body;
                 } catch (e) {
                     console.error(e);
                 } finally {
@@ -147,17 +175,16 @@ describe('changeType end point test', () => {
                 }
             });
     });
-    // error: cannot change type while in a running game play
-    it('should get error ' + KasotiErrorMsgMap.e103, (done) => {
-        let endPoint = '/api/v1/players/' + playerRes._id + '/type/qr';
-        chai.request(server).get(endPoint)
+
+    it('should get error: ' + KasotiErrorMsgMap.e106, (done) => {
+        let noq = 3;
+        chai.request(server).get('/api/v1/players/' + playerRes._id + '/noq/' + noq)
             .end((err, res) => {
                 try {
-                    let e103 = KasotiErrorMap.e103;
-                    expect(res).to.have.status(e103.statusCode);
-                    expect(res.body.errorCode).to.eql(e103.errorCode);
-                    expect(res.body.statusCode).to.eql(e103.statusCode);
-                    expect(res.body.error).to.eql(e103.message);
+                    let errObj = KasotiErrorMap.e106;
+                    expect(res).to.have.status(errObj.statusCode);
+                    expect(res.body.error).to.eql(errObj.message);
+                    expect(res.body.errorCode).to.eql(errObj.errorCode);
                 } catch (e) {
                     console.error(e);
                 } finally {
@@ -165,7 +192,6 @@ describe('changeType end point test', () => {
                 }
             });
     });
-
 
     it('should delete gamePlay', (done) => {
         chai.request(server)
@@ -202,4 +228,5 @@ describe('changeType end point test', () => {
 
             });
     });
+    
 });

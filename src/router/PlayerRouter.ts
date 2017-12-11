@@ -74,30 +74,20 @@ export class PlayerRouter {
 
     // this is here to make sure this operation is done by 
     // the initiator of the game, which is a Player
-    // TODO: if player in a running game it should not set No Of Questioner
     public setNoOfQuestioner(req: Request, res: Response, next: NextFunction) {
         GamePlay.findOne({ initiator: req.params.id })
             .then((gamePlay) => {
                 if (gamePlay) {
-                    let noq = parseInt(req.params.noq);
-                    if (!isNaN(noq)) {
-                        gamePlay.noOfQuestioner = noq;
-                        gamePlay.save().then((savedGamePlay) => {
-                            res.json(savedGamePlay);
-                        }).catch(next);
-                    } else {
-                        // TODO: handle error
-                        // number is required
-                        res.json(null);
-                        return;
-                    }
-                } else {
-                    // TODO: handle error
-                    // gameplay not found
-                    res.json(null);
-                    return;
-                }
-
+                    if (!gamePlay.isRunning) {
+                        let noq = parseInt(req.params.noq);
+                        if (!isNaN(noq)) {
+                            gamePlay.noOfQuestioner = noq;
+                            gamePlay.save().then((savedGamePlay) => {
+                                res.json(savedGamePlay);
+                            }).catch(next);
+                        } else KasotiError.throwError(105);   // a number is required
+                    } else KasotiError.throwError(106);       // game play not found
+                } else KasotiError.throwError(107);           // cannot set noq while in a running game play
             }).catch(next);
     }
 
