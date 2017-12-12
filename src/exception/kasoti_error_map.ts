@@ -17,6 +17,16 @@ export class KasotiErrorMsgMap {
     public static e106 = "cannot set noq while in a running game play";
     public static e107 = "game play not found";
 
+    // for joinGame end point 
+    public static e108 = "no room for new questioner";
+    public static e109 = "no room for new answerer";
+    public static e110 = "player type not identified";
+    public static e111 = "gameplay not waiting";
+    public static e112 = "gameplay not running";
+    public static e113 = "gameplay not found";
+    public static e114 = "player already in a gameplay";
+    public static e115 = "player not found";    
+
 }
 export class KasotiErrorMap {
     public static e100 = new RestError(KasotiErrorMsgMap.e100, 100, 409);
@@ -29,6 +39,16 @@ export class KasotiErrorMap {
     public static e105 = new RestError(KasotiErrorMsgMap.e105, 105, 400);
     public static e106 = new RestError(KasotiErrorMsgMap.e106, 106, 409);
     public static e107 = new RestError(KasotiErrorMsgMap.e107, 107, 400);
+    // for joinGame end point
+    public static e108 = new RestError(KasotiErrorMsgMap.e108, 108, 409);
+    public static e109 = new RestError(KasotiErrorMsgMap.e109, 109, 409);
+    public static e110 = new RestError(KasotiErrorMsgMap.e110, 110, 400);
+    public static e111 = new RestError(KasotiErrorMsgMap.e111, 111, 409);
+    public static e112 = new RestError(KasotiErrorMsgMap.e112, 112, 409);
+    public static e113 = new RestError(KasotiErrorMsgMap.e113, 113, 409);
+    public static e114 = new RestError(KasotiErrorMsgMap.e114, 114, 409);
+    public static e115 = new RestError(KasotiErrorMsgMap.e115, 115, 409);
+
 } 
 
 export class KasotiError {

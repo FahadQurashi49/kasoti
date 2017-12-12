@@ -109,7 +109,7 @@ export class PlayerRouter {
 
     public joinGame(req: Request, res: Response, next: NextFunction) {
         Player.findById({ _id: req.params.id }).then((player) => {
-            if (player) { // if player already in a game play?
+            if (player) { 
                 if (!player.gamePlay) {
                     GamePlay.findById({ _id: req.params.g_id }).then((gamePlay) => {
                         if (gamePlay) {
@@ -119,8 +119,7 @@ export class PlayerRouter {
                                         case "qr":
                                             Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.QUESTIONER }).then((count) => {
                                                 if (count === gamePlay.noOfQuestioner) {
-                                                    // TODO: handle error
-                                                    res.send("no room for new questioner");
+                                                    KasotiError.throwError(108);    // no room for new questioner
                                                 } else {
                                                     player.gamePlay = req.params.g_id;
                                                     player.playerType = PlayerType.QUESTIONER;
@@ -133,8 +132,7 @@ export class PlayerRouter {
                                         case "ar":
                                             Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.ANSWERER }).then((count) => {
                                                 if (count > 0) {
-                                                    // TODO: handle error
-                                                    res.send("no room for new answerer");
+                                                    KasotiError.throwError(109);    // no room for new answerer
                                                 } else {
                                                     player.gamePlay = req.params.g_id;
                                                     player.playerType = PlayerType.ANSWERER;
@@ -146,38 +144,26 @@ export class PlayerRouter {
 
                                             break;
                                         default:
-                                            // TODO: handle error
-                                            res.send("player type not identified");
+                                            KasotiError.throwError(110);    // player type not identified
                                             break;
                                     }
 
                                 } else {
-                                    // TODO: handle error
-                                    res.send("gameplay not waiting");
-                                    return;
+                                    KasotiError.throwError(111);    // gameplay not waiting
                                 }
                             } else {
-                                // TODO: handle error
-                                // gameplay not running
-                                res.send("gameplay not running");
-                                return;
+                                KasotiError.throwError(112);    // gameplay not running
                             }
                         } else {
-                            // TODO: handle error
-                            res.send("gameplay not found");
-                            return;
+                            KasotiError.throwError(113);    // gameplay not found
                         }
                     }).catch(next);
                 } else {
-                    // TODO: handle error
-                    res.send("player already in a gameplay");
-                    return;
+                    KasotiError.throwError(114);    // player already in a gameplay
                 }
 
             } else {
-                // TODO: handle error
-                res.send("player not found");
-                return;
+                KasotiError.throwError(115);    // player not found
             }
 
         }).catch(next);
