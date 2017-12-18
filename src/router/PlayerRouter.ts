@@ -109,50 +109,53 @@ export class PlayerRouter {
 
     public joinGame(req: Request, res: Response, next: NextFunction) {
         Player.findById({ _id: req.params.id }).then((player) => {
-            if (player) { 
+            if (player) {
                 if (!player.gamePlay) {
                     GamePlay.findById({ _id: req.params.g_id }).then((gamePlay) => {
                         if (gamePlay) {
                             if (!gamePlay.isRunning) {
                                 if (gamePlay.isWaiting) {
-                                    switch (req.params.type) {
-                                        case "qr":
-                                            Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.QUESTIONER }).then((count) => {
-                                                if (count === gamePlay.noOfQuestioner) {
-                                                    KasotiError.throwError(108);    // no room for new questioner
-                                                } else {
-                                                    player.gamePlay = req.params.g_id;
-                                                    player.playerType = PlayerType.QUESTIONER;
-                                                    player.save().then((savedPlayer) => {
-                                                        res.json(savedPlayer);
-                                                    }).catch(next);
-                                                }
-                                            }).catch(next);
-                                            break;
-                                        case "ar":
-                                            Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.ANSWERER }).then((count) => {
-                                                if (count > 0) {
-                                                    KasotiError.throwError(109);    // no room for new answerer
-                                                } else {
-                                                    player.gamePlay = req.params.g_id;
-                                                    player.playerType = PlayerType.ANSWERER;
-                                                    player.save().then((savedPlayer) => {
-                                                        res.json(savedPlayer);
-                                                    }).catch(next);
-                                                }
-                                            }).catch(next);
+                                    if (gamePlay.noOfQuestioner) {
+                                        switch (req.params.type) {
+                                            case "qr":
+                                                Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.QUESTIONER }).then((count) => {
+                                                    if (count === gamePlay.noOfQuestioner) {
+                                                        KasotiError.throwError(108);    // no room for new questioner
+                                                    } else {
+                                                        player.gamePlay = req.params.g_id;
+                                                        player.playerType = PlayerType.QUESTIONER;
+                                                        player.save().then((savedPlayer) => {
+                                                            res.json(savedPlayer);
+                                                        }).catch(next);
+                                                    }
+                                                }).catch(next);
+                                                break;
+                                            case "ar":
+                                                Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.ANSWERER }).then((count) => {
+                                                    if (count > 0) {
+                                                        KasotiError.throwError(109);    // no room for new answerer
+                                                    } else {
+                                                        player.gamePlay = req.params.g_id;
+                                                        player.playerType = PlayerType.ANSWERER;
+                                                        player.save().then((savedPlayer) => {
+                                                            res.json(savedPlayer);
+                                                        }).catch(next);
+                                                    }
+                                                }).catch(next);
 
-                                            break;
-                                        default:
-                                            KasotiError.throwError(110);    // player type not identified
-                                            break;
+                                                break;
+                                            default:
+                                                KasotiError.throwError(110);    // player type not identified
+                                                break;
+                                        }
+                                    } else {
+                                        KasotiError.throwError(116);    // no of questioner not set
                                     }
-
                                 } else {
                                     KasotiError.throwError(111);    // gameplay not waiting
                                 }
                             } else {
-                                KasotiError.throwError(112);    // gameplay not running
+                                KasotiError.throwError(112);    // gameplay already running
                             }
                         } else {
                             KasotiError.throwError(113);    // gameplay not found

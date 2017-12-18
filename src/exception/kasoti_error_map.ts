@@ -22,10 +22,12 @@ export class KasotiErrorMsgMap {
     public static e109 = "no room for new answerer";
     public static e110 = "player type not identified";
     public static e111 = "gameplay not waiting";
-    public static e112 = "gameplay not running";
+    public static e112 = "gameplay already running";
     public static e113 = "gameplay not found";
     public static e114 = "player already in a gameplay";
     public static e115 = "player not found";    
+    public static e116 = "no. of questioner not set";
+    
 
 }
 export class KasotiErrorMap {
@@ -48,6 +50,7 @@ export class KasotiErrorMap {
     public static e113 = new RestError(KasotiErrorMsgMap.e113, 113, 409);
     public static e114 = new RestError(KasotiErrorMsgMap.e114, 114, 409);
     public static e115 = new RestError(KasotiErrorMsgMap.e115, 115, 409);
+    public static e116 = new RestError(KasotiErrorMsgMap.e116, 116, 409);
 
 } 
 
