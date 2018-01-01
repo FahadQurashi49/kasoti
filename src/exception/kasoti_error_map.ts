@@ -27,6 +27,12 @@ export class KasotiErrorMsgMap {
     public static e114 = "player already in a gameplay";
     public static e115 = "player not found";    
     public static e116 = "no. of questioner not set";
+
+    // for startGame end point
+    public static e117 = "can't start game!";
+    public static e118 = "gameplay already running";
+    public static e119 = "gameplay not waiting";
+    public static e120 = "gameplay not found";
     
 
 }
@@ -51,6 +57,11 @@ export class KasotiErrorMap {
     public static e114 = new RestError(KasotiErrorMsgMap.e114, 114, 409);
     public static e115 = new RestError(KasotiErrorMsgMap.e115, 115, 409);
     public static e116 = new RestError(KasotiErrorMsgMap.e116, 116, 409);
+    // for startGame end point
+    public static e117 = new RestError(KasotiErrorMsgMap.e117, 117, 409);
+    public static e118 = new RestError(KasotiErrorMsgMap.e118, 118, 409);
+    public static e119 = new RestError(KasotiErrorMsgMap.e119, 119, 409);
+    public static e120 = new RestError(KasotiErrorMsgMap.e120, 120, 409);
 
 } 
 

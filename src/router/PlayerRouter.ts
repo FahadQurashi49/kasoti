@@ -187,24 +187,21 @@ export class PlayerRouter {
                                         res.json(savedGamePlay);
                                     }).catch(next);
                                 } else {
-                                    // TODO: handle error
                                     // wait again
-                                    res.json("can't start game!");
+                                    KasotiError.throwError(117);        //can't start game!
                                 }
                             }).catch(next);
                         }).catch(next);
 
                     } else {
-                        // TODO: handle error
-                        res.json("gameplay already running");
+                        KasotiError.throwError(118);        // gameplay already running
+
                     }
                 } else {
-                    // TODO: handle error
-                    res.json("gameplay not waiting");
+                    KasotiError.throwError(119);            // gameplay not waiting
                 }
             } else {
-                // TODO: handle error
-                res.json("gameplay not found");
+                KasotiError.throwError(120);                 // gameplay not found
             }
         }).catch(next);
     }

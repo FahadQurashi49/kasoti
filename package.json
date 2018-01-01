@@ -12,7 +12,8 @@
     "dev": "nodemon -e ts  --exec \"npm run compile\"",
     "testChangeType": "mocha --reporter spec --require ts-node/register test/kasoti_e2e/changeType.test.ts",
     "testNoOfQuestioner": "mocha --reporter spec --require ts-node/register test/kasoti_e2e/noOfQuestioner.test.ts",
-    "testJoinGame": "mocha --reporter spec --require ts-node/register test/kasoti_e2e/joinGame.test.ts"
+    "testJoinGame": "mocha --reporter spec --require ts-node/register test/kasoti_e2e/joinGame.test.ts",
+    "testStartGame": "mocha --reporter spec --require ts-node/register test/kasoti_e2e/startGame.test.ts"
   },
   "keywords": [],
   "author": "",
