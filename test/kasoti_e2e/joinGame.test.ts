@@ -99,7 +99,6 @@ describe('joinGame end point test', () => {
 
     it('should change type to Answerer', (done) => {
         chai.request(server).get('/api/v1/players/' + playerRes._id + '/type/ar')
-            .send(player)
             .end((err, res) => {
                 try {
                     expect(err).to.be.null;

@@ -171,27 +171,32 @@ export class PlayerRouter {
 
         }).catch(next);
     }
-
+    // start the game which player has initiated
     public startGame(req: Request, res: Response, next: NextFunction) {
         GamePlay.findOne({ initiator: req.params.id }).then((gamePlay) => {
             if (gamePlay) {
                 if (gamePlay.isWaiting) {
                     if (!gamePlay.isRunning) {
-                        Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.QUESTIONER }).then((questionerCount) => {
-                            Player.count({ gamePlay: req.params.g_id, playerType: PlayerType.ANSWERER }).then((answererCount) => {
-                                if (questionerCount > 0 && questionerCount <= gamePlay.noOfQuestioner && answererCount === 1) {
-                                    gamePlay.isWaiting = false;
-                                    gamePlay.isRunning = true;
-                                    gamePlay.joinedQuestionerCount = questionerCount;
-                                    gamePlay.save().then((savedGamePlay) => {
-                                        res.json(savedGamePlay);
-                                    }).catch(next);
-                                } else {
-                                    // wait again
-                                    KasotiError.throwError(117);        //can't start game!
-                                }
+                        if (gamePlay.noOfQuestioner) {
+                            // add g_id in req param or use gamePlay._id
+                            Player.count({ gamePlay: gamePlay._id, playerType: PlayerType.QUESTIONER }).then((questionerCount) => {
+                                Player.count({ gamePlay: gamePlay._id, playerType: PlayerType.ANSWERER }).then((answererCount) => {
+                                    if (questionerCount > 0 && questionerCount <= gamePlay.noOfQuestioner && answererCount === 1) {
+                                        gamePlay.isWaiting = false;
+                                        gamePlay.isRunning = true;
+                                        gamePlay.joinedQuestionerCount = questionerCount;
+                                        gamePlay.save().then((savedGamePlay) => {
+                                            res.json(savedGamePlay);
+                                        }).catch(next);
+                                    } else {
+                                        // wait again
+                                        KasotiError.throwError(117);        // game conditions do no matched
+                                    }
+                                }).catch(next);
                             }).catch(next);
-                        }).catch(next);
+                        } else {
+                            KasotiError.throwError(121);    // no. of questioner not set
+                        }
 
                     } else {
                         KasotiError.throwError(118);        // gameplay already running
@@ -217,7 +222,7 @@ export class PlayerRouter {
         this.router.get("/:id/noq/:noq", this.setNoOfQuestioner);
         this.router.get("/:id/wait", this.setGameWaiting);
         this.router.get("/:id/type/:type/gid/:g_id/join", this.joinGame);
-        this.router.get("/:id/gid/:g_id/start", this.startGame);
+        this.router.get("/:id/start", this.startGame);
     }
 
 }

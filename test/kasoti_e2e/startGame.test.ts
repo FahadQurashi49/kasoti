@@ -12,8 +12,10 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 
 const player = { "name": "test player" };
+const MAX_QUESTIONER = 4;
 let playerRes: any;
 let gamePlayRes: any;
+let fakeQuestioners: Array<any> = [];
 
 describe("startGame end point test", () => {
     it('should create one player', (done) => {
@@ -57,7 +59,7 @@ describe("startGame end point test", () => {
     // gameplay not waiting
     it('should get error ' + KasotiErrorMsgMap.e119, (done) => {
         chai.request(server)
-            .get('/api/v1/players/' + playerRes._id + "/gid/" + gamePlayRes._id + '/start')
+            .get('/api/v1/players/' + playerRes._id + '/start')
             .send(player)
             .end((err, res) => {
                 try {
@@ -92,25 +94,182 @@ describe("startGame end point test", () => {
             });
     });
 
-    // gameplay not found
-    /* it('should get error ' + KasotiErrorMsgMap.e120, (done) => {
-        const fakeGId = "5a34f48af73b0b1f142043fb";
+    // error: no. of questioner not set
+    it('should get error: ' + KasotiErrorMsgMap.e121, (done) => {
         chai.request(server)
-            .get('/api/v1/players/' + playerRes._id + "/gid/" + fakeGId + '/start')
-            .send(player)
+            .get('/api/v1/players/' + playerRes._id + "/start")
             .end((err, res) => {
                 try {
-                    let errObj = KasotiErrorMap.e120;
+                    let errObj = KasotiErrorMap.e121;
                     expect(res).to.have.status(errObj.statusCode);
                     expect(res.body.error).to.eql(errObj.message);
                     expect(res.body.errorCode).to.eql(errObj.errorCode);
+                } catch (e) {
+                    console.log(e);
+                } finally {
+                    done();
+                }
+            });
+    });
+
+    it('should set no. of Questioner to ' + MAX_QUESTIONER, (done) => {
+        chai.request(server).get('/api/v1/players/' + playerRes._id + '/noq/' + MAX_QUESTIONER)
+            .send(player)
+            .end((err, res) => {
+                try {
+                    expect(err).to.be.null;
+                    expect(res).to.have.status(200);
+                    expect(res.type).to.eql('application/json');
+                    expect(res.body._id).to.be.string;
+                    expect(res.body.noOfQuestioner).to.eql(MAX_QUESTIONER);
+                    gamePlayRes = res.body;
                 } catch (e) {
                     console.error(e);
                 } finally {
                     done();
                 }
             });
-    }); */
+    });
+
+    // error: game conditions do no matched
+    it('should get error: ' + KasotiErrorMsgMap.e117, (done) => {
+        chai.request(server)
+            .get('/api/v1/players/' + playerRes._id + "/start")
+            .end((err, res) => {
+                try {
+                    let errObj = KasotiErrorMap.e117;
+                    expect(res).to.have.status(errObj.statusCode);
+                    expect(res.body.error).to.eql(errObj.message);
+                    expect(res.body.errorCode).to.eql(errObj.errorCode);
+                } catch (e) {
+                    console.log(e);
+                } finally {
+                    done();
+                }
+            });
+    });
+
+    it("add 4 fake questioner", (done) => {
+        // add 4 fake questioner
+        for (let i = 1; i <= MAX_QUESTIONER; i++) {
+            const fakeQuestioner = { "name": "fake player " + i };
+            let fakeQuestionerRes: any;
+            chai.request(server).post('/api/v1/players')
+                .send(fakeQuestioner)
+                .end((err, res) => {
+                    try {
+                        expect(err).to.be.null;
+                        expect(res).to.have.status(200);
+                        expect(res.type).to.eql('application/json');
+                        expect(res.body._id).to.be.string;
+                        fakeQuestionerRes = res.body;
+                        fakeQuestioners.push(fakeQuestionerRes);
+                        chai.request(server)
+                            .get('/api/v1/players/' + fakeQuestionerRes._id + "/type/qr/gid/" + gamePlayRes._id + '/join')
+                            .end((err, res) => {
+                                try {
+                                    expect(err).to.be.null;
+                                    expect(res).to.have.status(200);
+                                    expect(res.type).to.eql('application/json');
+                                    expect(res.body._id).to.be.string;
+                                    expect(res.body.playerType).to.eql(PlayerType.QUESTIONER);
+                                    expect(res.body.gamePlay).to.eql(gamePlayRes._id);
+                                    if (i === MAX_QUESTIONER) {
+                                        done();
+                                    }
+                                } catch (e) {
+                                    console.log(e);
+                                    done();
+                                }
+
+                            });
+                    } catch (e) {
+                        console.log(e);
+                        done();
+                    }
+
+                });
+        }
+    });
+
+    // error: game conditions do no matched
+    // since answerer not set
+    it('should get error: ' + KasotiErrorMsgMap.e117, (done) => {
+        chai.request(server)
+            .get('/api/v1/players/' + playerRes._id + "/start")
+            .end((err, res) => {
+                try {
+                    let errObj = KasotiErrorMap.e117;
+                    expect(res).to.have.status(errObj.statusCode);
+                    expect(res.body.error).to.eql(errObj.message);
+                    expect(res.body.errorCode).to.eql(errObj.errorCode);
+                } catch (e) {
+                    console.log(e);
+                } finally {
+                    done();
+                }
+            });
+    });
+    it('should change type to Answerer', (done) => {
+        chai.request(server).get('/api/v1/players/' + playerRes._id + '/type/ar')
+            .end((err, res) => {
+                try {
+                    expect(err).to.be.null;
+                    expect(res).to.have.status(200);
+                    expect(res.type).to.eql('application/json');
+                    expect(res.body._id).to.be.string;
+                    expect(res.body.playerType).to.eql(PlayerType.ANSWERER);
+                    playerRes = res.body;
+                } catch (e) {
+                    console.error(e);
+                } finally {
+                    done();
+                }
+            });
+    }); 
+
+    it('should start game successfully', (done) => {
+        chai.request(server)
+            .get('/api/v1/players/' + playerRes._id + "/start")
+            .end((err, res) => {
+                try {
+                    expect(err).to.be.null;
+                    expect(res).to.have.status(200);
+                    expect(res.type).to.eql('application/json');
+                    expect(res.body._id).to.be.string;
+                    expect(res.body.isWaiting).to.be.false;
+                    expect(res.body.isRunning).to.be.true;
+                    expect(res.body.joinedQuestionerCount).to.eql(MAX_QUESTIONER);
+                } catch (e) {
+                    console.log(e);
+                } finally {
+                    done();
+                }
+            });
+    });
+
+    it('should delete all fake questioners', (done) => {
+        for (let i = 0; i < fakeQuestioners.length; i++) {
+            let questioner = fakeQuestioners[i];
+            chai.request(server)
+                .del('/api/v1/players/' + questioner._id)
+                .end((err, res) => {
+                    try {
+                        expect(err).to.be.null;
+                        expect(res).to.have.status(200);
+                        expect(res.type).to.eql('application/json');
+                        expect(res.body._id).to.eql(questioner._id);
+                        if ((i+1) === fakeQuestioners.length) {
+                            done();
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        done();
+                    }
+
+                });
+        }
+    });
 
     it('should delete gamePlay', (done) => {
         chai.request(server)
